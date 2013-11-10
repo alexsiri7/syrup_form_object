@@ -1,8 +1,8 @@
-==Syrup::FormObject
+#Syrup::FormObject
 
 This is a simple implementation of the FormObject... pattern?
 
-==Installation
+##Installation
 
     gem install syrup_form_object
 
@@ -10,7 +10,7 @@ or in the *Gemfile*
 
     gem 'syrup_form_object'
 
-==Examples
+##Examples
 
     class EventCreateForm < Syrup::FormObject
       attr_accessor :event
@@ -31,7 +31,7 @@ or in the *Gemfile*
       end
     end
 
-==Some sources for Form Objects
+##Some sources for Form Objects
 
 https://github.com/apotonick/reform An implementation of Form Objects
 
