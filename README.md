@@ -12,6 +12,15 @@ or in the *Gemfile*
 
 ##Examples
 
+To update the ```Event``` class in your model
+
+    class Event < ActiveRecord::Base
+      validates :start_date, presence: true
+      validates :end_date, presence: true
+    end
+
+You create the follwing form
+
     class EventCreateForm < Syrup::FormObject
       attr_accessor :event
       accepts_nested_attributes_for :event
@@ -19,17 +28,54 @@ or in the *Gemfile*
       attribute :length_of_the_event, Integer
       validates :length_of_the_event, numericality:{greater_than: 0}
 
-      def save(params)
+      def build
+        self.event = Event.new
+      end
+
+      def save
         if self.valid?
           end_date = event.start_date + length_of_the_event.hours
-          event_attributes = params[:event_attributes].merge(end_date: end_date)
-          event = Event.new(event_attributes)
+          event.end_date = end_date
           event.save
         else
           false
         end
       end
     end
+
+Create a controller similar to this one
+
+    class EventController < ApplicationController
+      def new
+        @event_form = EventCreateForm.new
+      end
+
+      def create
+        @event_form = EventCreateForm.new(create_params)
+        if @event_form.save
+          redirect_to @event_form.event
+        else
+          render :new
+        end
+      end
+
+      def create_params
+        params.require(:event_create_form)
+          .permit(:length_of_the_event)
+          .permit(event_attributes: [:start_date])
+      end
+    end
+
+
+And in the template:
+
+    <%= form_for @event_form do %>
+      <%= fields_for :event do %>
+        <%= input_tag :start_date  %>
+      <% end %>
+      <%= input_tag :length_of_the_event  %>
+    <% end %>
+
 
 ##Some sources for Form Objects
 
