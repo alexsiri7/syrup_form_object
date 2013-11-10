@@ -1,11 +1,31 @@
 require 'virtus'
 
 class Syrup::FormObject
-  include Virtus
+  include Virtus.model
 
-  def self.accepts_nested_attributes_for(*relations)
-    relations.each do |relation|
-      module_eval "def #{relation}_attributes=(attributes); #{relation}.attributes=attributes; end"
+  extend ActiveModel::Naming
+  include ActiveModel::Conversion
+  include ActiveModel::Validations
+
+  class << self
+    def accepts_nested_attributes_for(*relations)
+      relations.each do |relation|
+        build_attributes_setter relation
+      end
+    end
+
+    # build_attributes_setter 'address'
+    #
+    # def address_attributes=(attributes)
+    #   address.attributes=attributes
+    # end
+
+    def build_attributes_setter(relation)
+      module_eval <<-EOH
+        def #{relation}_attributes=(attributes)
+          #{relation}.attributes=attributes
+        end
+      EOH
     end
   end
 
@@ -22,5 +42,9 @@ class Syrup::FormObject
   end
 
   def build; end
+
+  def persisted?
+    false
+  end
 
 end

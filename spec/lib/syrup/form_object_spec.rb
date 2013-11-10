@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 class TestItem
-  include Virtus
+  include Virtus.model
   attribute :test_item_value, Integer
 end
 
