@@ -1,5 +1,12 @@
 #Syrup::FormObject
 
+[![Gem Version](https://badge.fury.io/rb/syrup_form_object.png)][gem]
+[![Build Status](https://travis-ci.org/alexsiri7/syrup_form_object.png?branch=master)][travis]
+
+[gem]: http://badge.fury.io/rb/syrup_form_object
+[travis]: https://travis-ci.org/alexsiri7/syrup_form_object
+
+
 This is a simple implementation of the FormObject... pattern?
 
 ##Installation
