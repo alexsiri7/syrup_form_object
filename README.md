@@ -22,15 +22,11 @@ To update the ```Event``` class in your model
 You create the follwing form
 
     class EventCreateForm < Syrup::FormObject
-      attr_accessor :event
+      has_one :event
       accepts_nested_attributes_for :event
 
       attribute :length_of_the_event, Integer
       validates :length_of_the_event, numericality:{greater_than: 0}
-
-      def build
-        self.event = Event.new
-      end
 
       def save
         if self.valid?

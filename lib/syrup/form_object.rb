@@ -27,11 +27,29 @@ class Syrup::FormObject
         end
       EOH
     end
+
+    def relations
+      @relations ||= []
+    end
+
+    def has_one(klass)
+      relations << klass
+      attr_accessor klass
+    end
+
+
   end
 
   def initialize(params={})
+    build_relations
     build
     assign_parameters(params)
+  end
+
+  def build_relations
+    self.class.relations.each do |klass|
+      self.send "#{klass}=", klass.to_s.camelize.constantize.new
+    end
   end
 
   def assign_parameters(params)

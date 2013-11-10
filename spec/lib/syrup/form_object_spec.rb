@@ -7,12 +7,11 @@ end
 
 class TestSubclass < Syrup::FormObject
   attribute :test_value, String
-  attr_accessor :test_item
+  has_one :test_item
   accepts_nested_attributes_for :test_item
 
   def build
     @built = true
-    self.test_item = TestItem.new
   end
 
   def has_called_build?
