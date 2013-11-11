@@ -6,6 +6,9 @@ class TestItem
 
   def self.find(id)
   end
+
+  def save
+  end
 end
 
 class TestSubclass < Syrup::FormObject
@@ -24,6 +27,15 @@ class TestSubclass < Syrup::FormObject
   def has_called_after_find?
     @after_find
   end
+
+  def after_save
+    @after_save = true
+  end
+
+  def has_called_after_save?
+    @after_save
+  end
+
 end
 
 shared_examples 'successful create' do
@@ -66,7 +78,15 @@ describe Syrup::FormObject do
       end
     end
 
-    pending '#save'
+    describe '#save' do
+      let(:params) { {} }
+      subject { test_subclass.new(params) }
+      it 'calls after_save' do
+        subject.save
+
+        expect(subject).to have_called_after_save
+      end
+    end
   end
   context 'when using nested attributes' do
     let(:test_subclass) {
@@ -110,7 +130,21 @@ describe Syrup::FormObject do
       end
     end
 
-    pending '#save'
+    describe '#save' do
+      let(:params) {{ test_item_attributes: {
+                           test_item_value: '2'}}}
+      subject { test_subclass.new(params) }
+      it 'saves the test_item' do
+        subject.test_item.should_receive(:save)
+
+        subject.save
+      end
+      it 'calls after_save' do
+        subject.save
+
+        expect(subject).to have_called_after_save
+      end
+    end
   end
 
   context 'when using a wrapped object' do
@@ -158,15 +192,33 @@ describe Syrup::FormObject do
     describe '::find' do
       subject { test_subclass.find(params) }
       let(:params) { 2 }
+      let(:test_item) { TestItem.new }
 
       it 'loads the test_item from the id sent' do
+        TestItem.should_receive(:find).with(params) { test_item }
+
+        expect(subject.wrapped).to be test_item
       end
       it 'calls the after_find method' do
         expect(subject).to have_called_after_find
       end
     end
 
-    pending '#save'
+    describe '#save' do
+      let(:params) {{ test_item_value: '2' }}
+
+      subject { test_subclass.new(params) }
+      it 'saves the test_item' do
+        subject.test_item.should_receive(:save)
+
+        subject.save
+      end
+      it 'calls after_save' do
+        subject.save
+
+        expect(subject).to have_called_after_save
+      end
+    end
   end
 
 end

@@ -97,9 +97,17 @@ class Syrup::FormObject
 
   def build(params); end
   def after_find(params); end
+  def after_save; end
 
   def persisted?
     false
+  end
+
+  def save
+    self.class.relations.each do |klass|
+      self.send(klass).save
+    end
+    after_save
   end
 
 end
