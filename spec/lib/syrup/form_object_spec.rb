@@ -9,6 +9,10 @@ class TestItem
 
   def save
   end
+
+  def transaction
+    yield
+  end
 end
 
 class TestSubclass < Syrup::FormObject

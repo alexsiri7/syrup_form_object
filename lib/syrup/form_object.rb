@@ -37,10 +37,8 @@ class Syrup::FormObject
       attr_accessor klass
     end
 
-    attr_accessor :wrapped_class
 
     def wraps(klass)
-      wrapped_class = klass
       has_one(klass)
       alias_method :wrapped, klass
       alias_method :wrapped=, "#{klass}="
@@ -103,11 +101,25 @@ class Syrup::FormObject
     false
   end
 
+  def transaction(&block)
+    first_related_object.transaction(&block)
+  end
+
+  def first_related_object
+    respond_to?(:wrapped) ? wrapped : self.send(self.class.relations.first)
+  end
+
   def save
-    self.class.relations.each do |klass|
-      self.send(klass).save
+    if self.class.relations.empty?
+      after_save
+    else
+      transaction do
+        self.class.relations.each do |klass|
+          self.send(klass).save
+        end
+        after_save
+      end
     end
-    after_save
   end
 
 end
