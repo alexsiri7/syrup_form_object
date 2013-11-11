@@ -37,7 +37,18 @@ class Syrup::FormObject
       attr_accessor klass
     end
 
+    def wraps(klass)
+      has_one(klass)
+      alias_method :wrapped, klass
+    end
+  end
 
+  def method_missing(*params)
+    wrapped.send *params
+  end
+
+  def responds_to?(*params)
+    super || wrapped.responds_to?(*params)
   end
 
   def initialize(params={})

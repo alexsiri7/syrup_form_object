@@ -76,7 +76,6 @@ class EventController < ApplicationController
 end
 ```
 
-
 And in the template:
 
 ``` erb
