@@ -42,7 +42,6 @@ class Syrup::FormObject
       has_one(klass)
       alias_method :wrapped, klass
       alias_method :wrapped=, "#{klass}="
-
     end
 
     def find(params)
@@ -95,10 +94,12 @@ class Syrup::FormObject
 
   def build(params); end
   def after_find(params); end
+  def after_create; end
   def after_save; end
+  def after_commit; end
 
   def persisted?
-    false
+    respond_to?(:wrapped) && wrapped.persisted?
   end
 
   def transaction(&block)
@@ -113,12 +114,17 @@ class Syrup::FormObject
     if self.class.relations.empty?
       after_save
     else
+      new_object= !persisted?
       transaction do
         self.class.relations.each do |klass|
           self.send(klass).save
         end
+        if new_object
+          after_create
+        end
         after_save
       end
+      after_commit
     end
   end
 

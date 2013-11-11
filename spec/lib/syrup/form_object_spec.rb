@@ -13,6 +13,10 @@ class TestItem
   def transaction
     yield
   end
+
+  def persisted?
+    false
+  end
 end
 
 class TestSubclass < Syrup::FormObject
@@ -38,6 +42,22 @@ class TestSubclass < Syrup::FormObject
 
   def has_called_after_save?
     @after_save
+  end
+
+  def after_create
+    @after_create = true
+  end
+
+  def has_called_after_create?
+    @after_create
+  end
+
+  def after_commit
+    @after_commit = true
+  end
+
+  def has_called_after_commit?
+    @after_commit
   end
 
 end
@@ -91,6 +111,15 @@ describe Syrup::FormObject do
         expect(subject).to have_called_after_save
       end
     end
+
+    describe '#persisted?' do
+      let(:params) { {} }
+      subject { test_subclass.new(params) }
+      it 'returns false' do
+        expect(subject.persisted?).to be_false
+      end
+    end
+
   end
   context 'when using nested attributes' do
     let(:test_subclass) {
@@ -147,6 +176,15 @@ describe Syrup::FormObject do
         subject.save
 
         expect(subject).to have_called_after_save
+      end
+    end
+
+    describe '#persisted?' do
+      let(:params) {{ test_item_attributes: {
+                           test_item_value: '2'}}}
+      subject { test_subclass.new(params) }
+      it 'returns false' do
+        expect(subject.persisted?).to be_false
       end
     end
   end
@@ -221,6 +259,34 @@ describe Syrup::FormObject do
         subject.save
 
         expect(subject).to have_called_after_save
+      end
+      context 'when the object is new' do
+        it 'calls after_create' do
+          subject.wrapped.stub(:persisted?) { false }
+
+          subject.save
+
+          expect(subject).to have_called_after_create
+        end
+      end
+      context 'when the object is not new' do
+        it 'calls after_update' do
+          subject.wrapped.stub(:persisted?) { true }
+
+          subject.save
+
+          expect(subject).not_to have_called_after_create
+        end
+      end
+    end
+
+    describe '#persisted?' do
+      let(:params) {{ test_item_value: '2' }}
+      subject { test_subclass.find(params) }
+      it 'forwards the message to the wrapped object' do
+        subject.wrapped.stub(:persisted?) {:a_value}
+
+        expect(subject.persisted?).to be :a_value
       end
     end
   end
