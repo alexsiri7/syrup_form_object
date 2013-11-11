@@ -42,6 +42,7 @@ describe Syrup::FormObject do
         attribute :test_value, String
       end
     }
+
     describe '#new' do
       subject { test_subclass.new(params) }
       let(:params) { {} }
@@ -56,7 +57,7 @@ describe Syrup::FormObject do
         end
       end
     end
-    pending '#save'
+
     describe '::find' do
       subject { test_subclass.find(params) }
       let(:params) { {} }
@@ -65,6 +66,7 @@ describe Syrup::FormObject do
       end
     end
 
+    pending '#save'
   end
   context 'when using nested attributes' do
     let(:test_subclass) {
@@ -94,7 +96,6 @@ describe Syrup::FormObject do
       end
     end
 
-    pending '#save'
     describe '::find' do
       subject { test_subclass.find(params) }
       let(:params) { {test_item: 2} }
@@ -109,6 +110,7 @@ describe Syrup::FormObject do
       end
     end
 
+    pending '#save'
   end
 
   context 'when using a wrapped object' do
@@ -153,7 +155,6 @@ describe Syrup::FormObject do
       end
     end
 
-    pending '#save'
     describe '::find' do
       subject { test_subclass.find(params) }
       let(:params) { 2 }
@@ -165,7 +166,7 @@ describe Syrup::FormObject do
       end
     end
 
+    pending '#save'
   end
-
 
 end
