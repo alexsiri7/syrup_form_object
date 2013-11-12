@@ -11,6 +11,10 @@ class String
   end
 end
 
+module ActiveRecord
+  class Rollback < StandardError; end
+end
+
 module ActiveModel
   module Naming; end
   module Conversion; end

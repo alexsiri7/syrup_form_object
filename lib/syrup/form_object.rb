@@ -111,20 +111,28 @@ class Syrup::FormObject
   end
 
   def save
-    if self.class.relations.empty?
+    if self.class.relations.empty? && !respond_to?(:wrapped)
       after_save
+      true
     else
       new_object= !persisted?
+      saved = false
       transaction do
-        self.class.relations.each do |klass|
+        saved = self.class.relations.all? do |klass|
           self.send(klass).save
+        end
+        if !saved
+          raise ActiveRecord::Rollback
         end
         if new_object
           after_create
         end
         after_save
       end
-      after_commit
+      if saved
+        after_commit
+      end
+      saved
     end
   end
 

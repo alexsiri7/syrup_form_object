@@ -11,8 +11,14 @@ class TestItem
   end
 
   def transaction
-    yield
+    begin
+      yield
+    rescue ActiveRecord::Rollback
+      @rollback = true
+    end
   end
+
+  attr_reader :rollback
 
   def persisted?
     false
@@ -51,6 +57,11 @@ class TestSubclass < Syrup::FormObject
   def has_called_after_create?
     @after_create
   end
+
+  def has_called_rollback?
+    @test_item.rollback
+  end
+
 
   def after_commit
     @after_commit = true
@@ -173,9 +184,34 @@ describe Syrup::FormObject do
         subject.save
       end
       it 'calls after_save' do
+        subject.test_item.stub(:save) { true }
+
         subject.save
 
         expect(subject).to have_called_after_save
+      end
+
+
+      context 'when the object saves' do
+        it 'returns true' do
+          subject.test_item.stub(:save) { true }
+          expect(subject.save).to be_true
+        end
+      end
+
+      context 'when the object does not save' do
+        it 'returns false' do
+          subject.test_item.stub(:save) {false}
+
+          expect(subject.save).to be_false
+        end
+        it 'raises a rollback exception' do
+          subject.test_item.stub(:save) {false}
+
+          subject.save
+
+          expect(subject).to have_called_rollback
+        end
       end
     end
 
@@ -256,6 +292,8 @@ describe Syrup::FormObject do
         subject.save
       end
       it 'calls after_save' do
+        subject.test_item.stub(:save) { true }
+
         subject.save
 
         expect(subject).to have_called_after_save
@@ -263,6 +301,7 @@ describe Syrup::FormObject do
       context 'when the object is new' do
         it 'calls after_create' do
           subject.wrapped.stub(:persisted?) { false }
+          subject.wrapped.stub(:save) { true }
 
           subject.save
 
@@ -270,14 +309,38 @@ describe Syrup::FormObject do
         end
       end
       context 'when the object is not new' do
-        it 'calls after_update' do
+        it 'does not call after create' do
           subject.wrapped.stub(:persisted?) { true }
+          subject.wrapped.stub(:save) { true }
 
           subject.save
 
           expect(subject).not_to have_called_after_create
         end
       end
+
+      context 'when the object saves' do
+        it 'returns true' do
+          subject.test_item.stub(:save) { true }
+          expect(subject.save).to be_true
+        end
+      end
+
+      context 'when the object does not save' do
+        it 'returns false' do
+          subject.test_item.stub(:save) {false}
+
+          expect(subject.save).to be_false
+        end
+        it 'raises a rollback exception' do
+          subject.test_item.stub(:save) {false}
+
+          subject.save
+
+          expect(subject).to have_called_rollback
+        end
+      end
+
     end
 
     describe '#persisted?' do
