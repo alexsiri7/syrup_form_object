@@ -64,7 +64,12 @@ class Syrup::FormObject
   def initialize(params={})
     build_relations
     build(params)
-    assign_parameters(params)
+    self.attributes=params
+  end
+
+  def update_attributes(params)
+    self.attributes=params
+    self.save
   end
 
   def build_relations
@@ -85,7 +90,7 @@ class Syrup::FormObject
     end
   end
 
-  def assign_parameters(params)
+  def attributes=(params)
     @params = params
     params.each do |key, value|
       self.send "#{key}=", value
@@ -94,6 +99,9 @@ class Syrup::FormObject
 
   def build(params); end
   def after_find(params); end
+
+  def before_save; end
+  def before_create; end
   def after_create; end
   def after_save; end
   def after_commit; end
@@ -118,6 +126,10 @@ class Syrup::FormObject
       new_object= !persisted?
       saved = false
       transaction do
+        before_save
+        if new_object
+          before_create
+        end
         saved = self.class.relations.all? do |klass|
           self.send(klass).save
         end

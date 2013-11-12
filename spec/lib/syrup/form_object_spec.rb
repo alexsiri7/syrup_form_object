@@ -340,7 +340,11 @@ describe Syrup::FormObject do
           expect(subject).to have_called_rollback
         end
       end
+    end
 
+    describe '#update_attributes' do
+      it 'updates the attributes in the objects'
+      it 'behaves like save'
     end
 
     describe '#persisted?' do
