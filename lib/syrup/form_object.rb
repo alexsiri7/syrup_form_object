@@ -5,9 +5,17 @@ class Syrup::FormObject
 
   extend ActiveModel::Naming
   include ActiveModel::Conversion
-  include ActiveModel::Validations
+  include ActiveRecord::Validations
+
+  include ActiveRecord::Persistence
+  include ActiveRecord::Transactions
+  include ActiveModel::Validations::Callbacks
+  include ActiveSupport::Callbacks
+  include ActiveModel::Callbacks
+  include ActiveRecord::Callbacks
 
   class << self
+
     def accepts_nested_attributes_for(*relations)
       relations.each do |relation|
         build_attributes_setter relation
@@ -40,8 +48,12 @@ class Syrup::FormObject
 
     def wraps(klass)
       has_one(klass)
-      alias_method :wrapped, klass
-      alias_method :wrapped=, "#{klass}="
+      @wrapped_class = klass
+      include Syrup::Form::Wrapped
+    end
+
+    def standalone
+      include Syrup::Form::Standalone
     end
 
     def find(params)
@@ -53,13 +65,8 @@ class Syrup::FormObject
 
   end
 
-  def method_missing(*params)
-    wrapped.send *params
-  end
-
-  def responds_to?(*params)
-    super || wrapped.responds_to?(*params)
-  end
+  def remember_transaction_record_state(*); end
+  def restore_transaction_record_state(*); end
 
   def initialize(params={})
     build_relations
@@ -79,14 +86,10 @@ class Syrup::FormObject
   end
 
   def find_relations(params)
-    if params.is_a?(Hash)
-      self.class.relations.each do |klass|
-        if params[klass]
-          self.send "#{klass}=", klass.to_s.camelize.constantize.find(params[klass])
-        end
+    self.class.relations.each do |klass|
+      if params[klass]
+        self.send "#{klass}=", klass.to_s.camelize.constantize.find(params[klass])
       end
-    else
-      self.wrapped= self.wrapped.class.find(params)
     end
   end
 
@@ -106,10 +109,6 @@ class Syrup::FormObject
   def after_save; end
   def after_commit; end
 
-  def persisted?
-    respond_to?(:wrapped) && wrapped.persisted?
-  end
-
   def transaction(&block)
     first_related_object.transaction(&block)
   end
@@ -118,34 +117,37 @@ class Syrup::FormObject
     respond_to?(:wrapped) ? wrapped : self.send(self.class.relations.first)
   end
 
-  def save
-    if self.class.relations.empty? && !respond_to?(:wrapped)
-      after_save
-      true
-    else
-      new_object= !persisted?
-      saved = false
-      transaction do
-        before_save
-        if new_object
-          before_create
-        end
-        saved = self.class.relations.all? do |klass|
-          self.send(klass).save
-        end
-        if !saved
-          raise ActiveRecord::Rollback
-        end
-        if new_object
-          after_create
-        end
-        after_save
-      end
-      if saved
-        after_commit
-      end
-      saved
+  def related_objects
+    self.class.relations.collect do |klass|
+      self.send(klass)
     end
+  end
+
+
+  def add_to_transaction; end
+
+  def valid?
+    super && self.related_objects.all?(&:valid?)
+  end
+
+  def create_record
+    save_form
+  end
+
+  def update_record
+    save_form
+  end
+
+  def create
+    run_callbacks(:create) { save_form }
+  end
+
+  def update
+    run_callbacks(:update) { save_form }
+  end
+
+  def save_form
+    self.related_objects.all?(&:save)
   end
 
 end
