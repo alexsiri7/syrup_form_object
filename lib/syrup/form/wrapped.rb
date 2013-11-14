@@ -4,6 +4,10 @@ module Syrup::Form::Wrapped
   included do
     alias_method :wrapped, @wrapped_class
     alias_method :wrapped=, "#{@wrapped_class}="
+
+    def self.model_name
+      @wrapped_class.to_s.camelize.constantize.model_name
+    end
   end
 
   def method_missing(*params)

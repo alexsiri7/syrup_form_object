@@ -2,18 +2,19 @@ module Syrup::Form::Standalone
   extend ActiveSupport::Concern
 
   included do
-    extend ClassMethods
-  end
-
-  module ClassMethods
-    def connection
-      ActiveRecord::Base.connection
+    def self.model_name
+      ActiveModel::Name.new(self, nil, self.class.name)
     end
   end
 
   def persisted?
     false
   end
+
+  def new_record?
+    true
+  end
+
 
   def readonly?
     false
@@ -22,4 +23,5 @@ module Syrup::Form::Standalone
   def wrapped?
     false
   end
+
 end

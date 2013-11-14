@@ -4,6 +4,14 @@ class TestItem
   include Virtus.model
   attribute :test_item_value, Integer
 
+  def self.model_name
+    ActiveModel::Name.new(self, nil, "test_item")
+  end
+
+  def errors
+    []
+  end
+
   def self.find(id)
   end
 
@@ -126,6 +134,7 @@ describe Syrup::FormObject do
       Class.new(TestSubclass) do
         standalone
         attribute :test_value, String
+        validates :test_value, presence: true
       end
     }
 
@@ -152,14 +161,43 @@ describe Syrup::FormObject do
       end
     end
 
-    describe '#save' do
+    describe '#valid?' do
       let(:params) { {} }
-      subject { test_subclass.new(params) }
-      it 'calls after_save' do
-        subject.save
 
-        expect(subject).to have_called_after_save
+      subject { test_subclass.new(params) }
+      context 'when the values are invalid' do
+        it 'returns false' do
+          expect(subject.valid?).to be_false
+        end
+
+        it 'adds the error message' do
+          subject.valid?
+
+          expect(subject.errors.full_messages).to eq ["Test value can't be blank"]
+        end
       end
+    end
+
+    describe '#save' do
+      context 'when the values are invalid' do
+        let(:params) { {} }
+        subject { test_subclass.new(params) }
+        it 'calls after_save' do
+          subject.save
+
+          expect(subject).not_to have_called_after_save
+        end
+      end
+      context 'when the values are valid' do
+        let(:params) { {test_value:'a value'} }
+        subject { test_subclass.new(params) }
+        it 'calls after_save' do
+          subject.save
+
+          expect(subject).to have_called_after_save
+        end
+      end
+
     end
 
     describe '#persisted?' do
@@ -211,6 +249,30 @@ describe Syrup::FormObject do
       end
       it 'calls the after_find method' do
         expect(subject).to have_called_after_find
+      end
+    end
+
+    describe '#valid?' do
+      let(:params) {{ test_item_attributes: {
+                           test_item_value: '2'}}}
+
+      subject { test_subclass.new(params) }
+      context 'when the nested object is invalid' do
+        it 'returns false' do
+          subject.test_item.stub(:valid?) {false}
+          subject.test_item.stub(:errors) { "test item value can't be blank" }
+
+          expect(subject.valid?).to be_false
+        end
+
+        it 'adds the error message' do
+          subject.test_item.stub(:valid?) {false}
+          subject.test_item.stub(:errors) { "test item value can't be blank" }
+
+          subject.valid?
+
+          expect(subject.errors.full_messages).to eq ["Test item test item value can't be blank"]
+        end
       end
     end
 
@@ -322,6 +384,29 @@ describe Syrup::FormObject do
       end
     end
 
+    describe '#valid?' do
+      let(:params) {{ test_item_value: '2' }}
+
+      subject { test_subclass.new(params) }
+      context 'when the wrapped object is invalid' do
+        it 'returns false' do
+          subject.test_item.stub(:valid?) {false}
+          subject.test_item.stub(:errors) { "test item value can't be blank" }
+
+          expect(subject.valid?).to be_false
+        end
+
+        it 'adds the error message' do
+          subject.test_item.stub(:valid?) {false}
+          subject.test_item.stub(:errors) { "test item value can't be blank" }
+
+          subject.valid?
+
+          expect(subject.errors.full_messages).to eq ["Test item test item value can't be blank"]
+        end
+      end
+    end
+
     describe '#save' do
       let(:params) {{ test_item_value: '2' }}
 
@@ -356,6 +441,14 @@ describe Syrup::FormObject do
           subject.save
 
           expect(subject).not_to have_called_after_create
+        end
+      end
+
+      context 'when the form is invalid' do
+        it 'returns false' do
+          subject.stub(:valid?) {false}
+
+          expect(subject.save).to be_false
         end
       end
 

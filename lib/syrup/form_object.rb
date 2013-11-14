@@ -5,9 +5,9 @@ class Syrup::FormObject
 
   extend ActiveModel::Naming
   include ActiveModel::Conversion
-  include ActiveRecord::Validations
 
   include ActiveRecord::Persistence
+  include ActiveRecord::Validations
   include ActiveRecord::Transactions
   include ActiveModel::Validations::Callbacks
   include ActiveSupport::Callbacks
@@ -61,6 +61,10 @@ class Syrup::FormObject
       form.find_relations(params)
       form.after_find(params)
       form
+    end
+
+    def connection
+      ActiveRecord::Base.connection
     end
 
   end
@@ -118,16 +122,24 @@ class Syrup::FormObject
   end
 
   def related_objects
+    related= {}
     self.class.relations.collect do |klass|
-      self.send(klass)
+      related[klass] = self.send(klass)
     end
+    related
   end
 
 
   def add_to_transaction; end
 
-  def valid?
-    super && self.related_objects.all?(&:valid?)
+  def valid?(*)
+    super
+    self.related_objects.each do |klass, related|
+      unless related.valid?
+        self.errors.add(klass, related.errors)
+      end
+    end
+    self.errors.empty?
   end
 
   def create_record
@@ -147,7 +159,7 @@ class Syrup::FormObject
   end
 
   def save_form
-    self.related_objects.all?(&:save)
+    self.related_objects.all?{|klass, related| related.save }
   end
 
 end
