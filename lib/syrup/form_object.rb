@@ -5,13 +5,13 @@ class Syrup::FormObject
 
   extend ActiveModel::Naming
   include ActiveModel::Conversion
+  extend ActiveModel::Callbacks
 
   include ActiveRecord::Persistence
-  include ActiveRecord::Validations
   include ActiveRecord::Transactions
+  include ActiveRecord::Validations
   include ActiveModel::Validations::Callbacks
   include ActiveSupport::Callbacks
-  include ActiveModel::Callbacks
   include ActiveRecord::Callbacks
 
   class << self
@@ -132,14 +132,13 @@ class Syrup::FormObject
 
   def add_to_transaction; end
 
-  def valid?(*)
+  def run_validations!(*)
     super
     self.related_objects.each do |klass, related|
       unless related.valid?
         self.errors.add(klass, related.errors)
       end
     end
-    self.errors.empty?
   end
 
   def create_record
