@@ -71,7 +71,8 @@ class Syrup::FormObject
 
   def remember_transaction_record_state(*); end
   def restore_transaction_record_state(*); end
-
+  def clear_transaction_record_state(*); end
+  def self.reflect_on_association(*); end
   def initialize(params={})
     build_relations
     build(params)
