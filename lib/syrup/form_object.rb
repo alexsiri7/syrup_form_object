@@ -143,11 +143,11 @@ class Syrup::FormObject
   end
 
   def create_record
-    save_form
+    run_callbacks(:create) {save_form}
   end
 
   def update_record
-    save_form
+    run_callbacks(:update) {save_form}
   end
 
   def create
