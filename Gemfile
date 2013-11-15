@@ -3,5 +3,5 @@ source 'https://rubygems.org'
 gemspec
 
 group :development do
-  gem 'rails', '~> 3.2'
+  gem 'rails', '~> 4.0'
 end
