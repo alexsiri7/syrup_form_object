@@ -4,4 +4,5 @@ gemspec path: '../'
 
 group :development do
   gem 'rails', '~> 3.2'
+  gem 'activerecord-nulldb-adapter',  git: 'git://github.com/nulldb/nulldb.git'
 end

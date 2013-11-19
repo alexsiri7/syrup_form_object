@@ -61,21 +61,21 @@ class Syrup::FormObject
     end
   end
 
-    def create_record
-      run_callbacks(:create) {save_form}
-    end
+  def create_record
+    run_callbacks(:create) {save_form}
+  end
 
-    def update_record
-      run_callbacks(:update) {save_form}
-    end
+  def update_record
+    run_callbacks(:update) {save_form}
+  end
 
-    def create
-      run_callbacks(:create) { save_form }
-    end
+  def create
+    run_callbacks(:create) { save_form }
+  end
 
-    def update
-      run_callbacks(:update) { save_form }
-    end
+  def update
+    run_callbacks(:update) { save_form }
+  end
 
 
 end

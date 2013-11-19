@@ -1,38 +1,6 @@
 require 'spec_helper'
 
-class TestItem
-  include Virtus.model
-  attribute :test_item_value, Integer
-
-  def self.model_name
-    ActiveModel::Name.new(self, nil, "test_item")
-  end
-
-  def errors
-    []
-  end
-
-  def self.find(id)
-  end
-
-  def save
-  end
-
-  def valid?
-    true
-  end
-
-  def readonly?
-    false
-  end
-
-  def new_record?
-    true
-  end
-
-  def persisted?
-    false
-  end
+class TestItem < ActiveRecord::Base
 end
 
 class TestSubclass < Syrup::FormObject
@@ -248,6 +216,8 @@ describe Syrup::FormObject do
         expect(subject.test_item).to be_a(TestItem)
       end
       it 'calls the after_find method' do
+        TestItem.stub(:find).once { TestItem.new }
+
         expect(subject).to have_called_after_find
       end
     end
@@ -380,6 +350,8 @@ describe Syrup::FormObject do
         expect(subject.wrapped).to be test_item
       end
       it 'calls the after_find method' do
+        TestItem.stub(:find).once { TestItem.new }
+
         expect(subject).to have_called_after_find
       end
     end
