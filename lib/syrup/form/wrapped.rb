@@ -14,8 +14,8 @@ module Syrup::Form::Wrapped
     wrapped.send *params
   end
 
-  def responds_to?(*params)
-    super || wrapped.responds_to?(*params)
+  def respond_to?(*params)
+    super || wrapped.respond_to?(*params)
   end
 
   def find_relations(params)

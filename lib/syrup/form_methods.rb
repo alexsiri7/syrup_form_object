@@ -7,5 +7,6 @@ module Syrup::FormMethods
     include Virtus.model
     extend ActiveModel::Naming
     include ActiveModel::Conversion
+    include ActiveRecord::AttributeAssignment
   end
 end

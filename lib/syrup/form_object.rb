@@ -30,24 +30,27 @@ class Syrup::FormObject
   def clear_transaction_record_state(*); end
   def self.reflect_on_association(*); end
   def add_to_transaction; end
+  def self.attributes_protected_by_default
+    []
+  end
 
   def initialize(params={})
     build_relations
     build(params)
-    self.attributes=params
+    self.assign_attributes(params)
   end
 
   def update_attributes(params)
-    self.attributes=params
+    self.assign_attributes(params)
     self.save
   end
 
-  def attributes=(params)
-    @params = params
-    params.each do |key, value|
-      self.send "#{key}=", value
-    end
-  end
+  # def attributes=(params)
+  #   @params = params
+  #   params.each do |key, value|
+  #     self.send "#{key}=", value
+  #   end
+  # end
 
   def build(params); end
   def after_find(params); end
