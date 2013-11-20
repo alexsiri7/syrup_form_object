@@ -9,7 +9,7 @@ class Syrup::FormObject
 
     def wraps(klass)
       has_one(klass)
-      @wrapped_class = klass
+      @wrapped_class_name = klass
       include Syrup::Form::Wrapped
     end
 

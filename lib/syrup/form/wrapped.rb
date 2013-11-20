@@ -2,12 +2,22 @@ module Syrup::Form::Wrapped
   extend ActiveSupport::Concern
 
   included do
-    alias_method :wrapped, @wrapped_class
-    alias_method :wrapped=, "#{@wrapped_class}="
+    alias_method :wrapped, @wrapped_class_name
+    alias_method :wrapped=, "#{@wrapped_class_name}="
+    @wrapped_class = @wrapped_class_name.to_s.camelize.constantize
+
+    def self.method_missing(*params)
+      @wrapped_class.send *params
+    end
+
+    def self.respond_to?(*params)
+      super || @wrapped_class.respond_to?(*params)
+    end
 
     def self.model_name
-      @wrapped_class.to_s.camelize.constantize.model_name
+      @wrapped_class.model_name
     end
+
   end
 
   def method_missing(*params)
@@ -38,6 +48,4 @@ module Syrup::Form::Wrapped
     wrapped.persisted?
   end
 
-
 end
-
