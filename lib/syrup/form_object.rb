@@ -68,7 +68,8 @@ class Syrup::FormObject
     run_callbacks(:create) {save_form}
   end
 
-  def update_record
+  def update_record(attributes={})
+    assign_attributes(attributes)
     run_callbacks(:update) {save_form}
   end
 
@@ -76,7 +77,8 @@ class Syrup::FormObject
     run_callbacks(:create) { save_form }
   end
 
-  def update
+  def update(attributes={})
+    assign_attributes(attributes)
     run_callbacks(:update) { save_form }
   end
 
