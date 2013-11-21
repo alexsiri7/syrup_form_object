@@ -21,6 +21,8 @@ gem 'syrup_form_object'
 
 ##Examples
 
+Note: The following example can be found in [syrup_form_example](https://github.com/alexsiri7/syrup_form_example)
+
 To update the ```Event``` class in your model
 ``` ruby
 class Event < ActiveRecord::Base
@@ -32,21 +34,16 @@ end
 You create the follwing form
 
 ``` ruby
-class EventCreateForm < Syrup::FormObject
-  has_one :event
-  accepts_nested_attributes_for :event
+class EventForm < Syrup::FormObject
+  wraps :event
 
   attribute :length_of_the_event, Integer
-  validates :length_of_the_event, numericality:{greater_than: 0}
+  validates :length_of_the_event, numericality: {greater_than: 0}
 
-  def save
-    if self.valid?
-      end_date = event.start_date + length_of_the_event.hours
-      event.end_date = end_date
-      event.save
-    else
-      false
-    end
+  before_validation :before_validation
+
+  def before_validation
+    self.end_date = event.start_date + length_of_the_event.to_i.hours
   end
 end
 ```
@@ -56,11 +53,11 @@ Create a controller similar to this one
 ``` ruby
 class EventController < ApplicationController
   def new
-    @event_form = EventCreateForm.new
+    @event_form = EventForm.new
   end
 
   def create
-    @event_form = EventCreateForm.new(create_params)
+    @event_form = EventForm.new(create_params)
     if @event_form.save
       redirect_to @event_form.event
     else
@@ -69,9 +66,8 @@ class EventController < ApplicationController
   end
 
   def create_params
-    params.require(:event_create_form)
-      .permit(:length_of_the_event)
-      .permit(event_attributes: [:start_date])
+    params.require(:event)
+      .permit(:length_of_the_event, :start_date)
   end
 end
 ```
@@ -80,9 +76,7 @@ And in the template:
 
 ``` erb
 <%= form_for @event_form do %>
-  <%= fields_for :event do %>
-    <%= input_tag :start_date  %>
-  <% end %>
+  <%= input_tag :start_date  %>
   <%= input_tag :length_of_the_event  %>
 <% end %>
 ```
