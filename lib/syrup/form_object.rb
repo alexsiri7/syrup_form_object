@@ -45,13 +45,6 @@ class Syrup::FormObject
     self.save
   end
 
-  # def attributes=(params)
-  #   @params = params
-  #   params.each do |key, value|
-  #     self.send "#{key}=", value
-  #   end
-  # end
-
   def build(params); end
   def after_find(params); end
 
@@ -64,23 +57,23 @@ class Syrup::FormObject
     end
   end
 
-  def create_record
-    run_callbacks(:create) {save_form}
-  end
+  if Rails::VERSION::MAJOR >= 4
 
-  def update_record(attributes={})
-    assign_attributes(attributes)
-    run_callbacks(:update) {save_form}
-  end
+    def create_record
+      run_callbacks(:create) {save_form}
+    end
 
-  def create
-    run_callbacks(:create) { save_form }
-  end
+    def update_record(attributes=[])
+      run_callbacks(:update) {save_form}
+    end
+  else
+    def create
+      run_callbacks(:create) { save_form }
+    end
 
-  def update(attributes={})
-    assign_attributes(attributes)
-    run_callbacks(:update) { save_form }
+    def update(attributes=[])
+      run_callbacks(:update) { save_form }
+    end
   end
-
 
 end
