@@ -11,6 +11,7 @@ module Syrup::Relations
     def accepts_nested_attributes_for(*relations)
       relations.each do |relation|
         build_attributes_setter relation
+        add_relation(relation)
       end
     end
 
@@ -32,8 +33,12 @@ module Syrup::Relations
       @relations ||= []
     end
 
+    def add_relation(klass)
+      relations << klass unless relations.include?(klass)
+    end
+
     def has_one(klass)
-      relations << klass
+      add_relation(klass)
       attr_accessor klass
     end
   end
