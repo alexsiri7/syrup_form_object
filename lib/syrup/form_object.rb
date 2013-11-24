@@ -23,6 +23,14 @@ class Syrup::FormObject
       form.after_find(params)
       form
     end
+
+    def form_name(form_name)
+      instance_eval <<-EOH
+        def self.model_name
+          ActiveModel::Name.new(self, nil, '#{form_name.to_s}')
+        end
+      EOH
+    end
   end
 
   def remember_transaction_record_state(*); end
